@@ -197,7 +197,7 @@ TcpServer::Client::~Client() {
 }
 
 // Геттеры хоста и порта
-uint32_t TcpServer::Client::getHost() {return address.sin_addr.s_addr;}
-uint16_t TcpServer::Client::getPort() {return address.sin_port;}
+uint32_t TcpServer::Client::getHost() const {return address.sin_addr.s_addr;}
+uint16_t TcpServer::Client::getPort() const {return address.sin_port;}
 
 #endif
