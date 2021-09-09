@@ -18,6 +18,13 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
+
+#define closesocket close
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
+#define SOCKET int
+#define SOCKADDR_IN struct sockaddr_in
 
 #endif
 
@@ -78,23 +85,24 @@ class TcpServer::Client {
 #ifdef _WIN32 // Windows NT
     SOCKET socket;
     SOCKADDR_IN address;
-    char buffer[buffer_size];
 public:
     Client(SOCKET socket, SOCKADDR_IN address);
-    const SOCKET& getSocket() const;
-    const SOCKADDR_IN& getAddr() const;
 #else // *nix
     int socket;
     struct sockaddr_in address;
-    char buffer[buffer_size];
+    
 public:
     Client(int socket, struct sockaddr_in address);
 #endif
 public:
     Client(const Client& other);
     ~Client();
+    const SOCKET& getSocket() const;
+    const SOCKADDR_IN& getAddr() const;
+
     uint32_t getHost() const;
     uint16_t getPort() const;
+    char buffer[buffer_size];
 
     int loadData();
     char* getData();

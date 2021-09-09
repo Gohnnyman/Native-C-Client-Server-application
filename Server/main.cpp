@@ -5,7 +5,7 @@
 
 //Парсер ip в std::string
 std::string getHostStr(const TcpServer::Client& client) {
-  uint32_t ip = client.getHost ();
+  uint32_t ip = client.getHost();
   return std::string() + std::to_string(int(reinterpret_cast<char*>(&ip)[0])) + '.' +
          std::to_string(int(reinterpret_cast<char*>(&ip)[1])) + '.' +
          std::to_string(int(reinterpret_cast<char*>(&ip)[2])) + '.' +
@@ -35,7 +35,7 @@ int main() {
                     << "size: " << size << " bytes" << std::endl
                     << ch << std::endl;
                 
-                if(*ch == 'q') 
+                if(ch == "quit") 
                 {
                     // delete client;
                     break;

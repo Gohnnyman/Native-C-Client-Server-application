@@ -1,4 +1,4 @@
-#include "TcpServer.h"
+#include "TcpClient.h"
 #include <chrono>
 #include <iostream>
 
@@ -6,56 +6,111 @@
 //port - порт на котором будем запускать сервер
 //handler - callback-функция запускаямая при подключении клиента
 //          объект которого и передают первым аргументом в callback
-//          (пример лямбда-функции: [](TcpServer::Client){...do something...})
+//          (пример лямбда-функции: [](TcpClient::Server){...do something...})
 
-int TcpServer::result; 
+int TcpClient::result; 
 
-TcpServer::TcpServer(const uint16_t port, handler_function_t handler) : port(port), handler(handler) {}
-
-
-
-TcpServer::~TcpServer() 
+TcpClient::TcpClient(const uint16_t port, handler_function_t handler) : port(port), handler(handler) 
 {
-  if(_status == status::up) stop();
-  
+      //----------------------
+    // Initialize Winsock
+    int iResult;                        
 
-#ifdef _WIN32 // Windows NT
-    WSACleanup();
-#endif
+    #ifdef _WIN32
+        WSADATA wsaData;
+        iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+        if (iResult != NO_ERROR) 
+        {
+            std::cout << "WSAStartup function failed\n";
+        }
+    #endif
+    //----------------------
+    // Create a SOCKET for connecting to server
+    SOCKET ConnectSocket;
+    ConnectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (ConnectSocket == INVALID_SOCKET) {
+        std::cout << "socket function failed with error\n";
+        #ifdef _WIN32
+            WSACleanup();
+        #endif
+        // return 1;
+    }
+
+    //----------------------
+
+
+    struct sockaddr_in clientService;
+
+    clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
+    clientService.sin_family = AF_INET;
+    clientService.sin_port = htons(8080);
+
+    //----------------------
+    // Connect to server.
+    iResult = connect(ConnectSocket, (struct sockaddr*) & clientService, sizeof (clientService));
+    if (iResult == SOCKET_ERROR) 
+    {
+        std:: cout << "connect function failed with error\n";
+        iResult = closesocket(ConnectSocket);
+        if (iResult == SOCKET_ERROR)
+        std::cout << "closesocket function failed\n";
+        closesocket(ConnectSocket);
+    }
+
+    std::cout << "Connected to server\n";
+
+    iResult = closesocket(ConnectSocket);
+    if (iResult == SOCKET_ERROR) 
+    {
+        std::cout << "closesocket function failed\n";
+        closesocket(ConnectSocket);
+    }
+
 }
 
-void TcpServer::setHandler(TcpServer::handler_function_t handler) 
+
+
+TcpClient::~TcpClient() 
+{
+    if(_status == status::up) stop();
+  
+    #ifdef _WIN32 // Windows NT
+        WSACleanup();
+    #endif
+}
+
+void TcpClient::setHandler(TcpClient::handler_function_t handler) 
 {
     this->handler = handler;
 }
 
 
-uint16_t TcpServer::getPort() const 
+uint16_t TcpClient::getPort() const 
 {
     return port;
 }
 
-uint16_t TcpServer::setPort( const uint16_t port) 
+uint16_t TcpClient::setPort( const uint16_t port) 
 {
     this->port = port;
     restart(); 
     return port;
 }
 
-TcpServer::status TcpServer::restart() 
+TcpClient::status TcpClient::restart() 
 {
     if(_status == status::up) stop ();
     return start();
 }
 
 
-void TcpServer::joinLoop() 
+void TcpClient::joinLoop() 
 {
     handler_thread.join();
 }
 
 
-int TcpServer::Client::loadData() 
+int TcpClient::Server::loadData() 
 {
     result = recv(socket, buffer, buffer_size, 0);
     if (result == SOCKET_ERROR)
@@ -66,12 +121,12 @@ int TcpServer::Client::loadData()
 }
 
 
-char* TcpServer::Client::getData() 
+char* TcpClient::Server::getData() 
 {
     return buffer;
 }
 
-bool TcpServer::Client::sendData(const char* buffer, const size_t size) const
+bool TcpClient::Server::sendData(const char* buffer, const size_t size) const
 {
     result = send(socket, buffer, size, 0); 
     if (result == SOCKET_ERROR) 
@@ -83,7 +138,7 @@ bool TcpServer::Client::sendData(const char* buffer, const size_t size) const
     return true;
 }
 
-bool TcpServer::sendData(char const* buffer, const size_t size) const
+bool TcpClient::sendData(char const* buffer, const size_t size) const
 {
     // return clnt->sendData(buffer, size);
     // SOCKET s = clnt->getSocket();
@@ -96,7 +151,7 @@ bool TcpServer::sendData(char const* buffer, const size_t size) const
     return true;
 }
 
-void TcpServer::stop() {
+void TcpClient::stop() {
     _status = status::close; 
     closesocket(serv_socket);
     
@@ -106,17 +161,17 @@ void TcpServer::stop() {
     client_handler_threads.clear (); 
 }
 
-const SOCKET& TcpServer::Client::getSocket() const 
+const SOCKET& TcpClient::Server::getSocket() const 
 {
     return socket;
 }
 
-const SOCKADDR_IN& TcpServer::Client::getAddr() const
+const SOCKADDR_IN& TcpClient::Server::getAddr() const
 {
     return address;
 }
 
-TcpServer::status TcpServer::start() 
+TcpClient::status TcpClient::start() 
 {
     #ifdef _WIN32
         WSAStartup(MAKEWORD(2, 2), &w_data); //Задаём версию WinSocket
@@ -140,7 +195,7 @@ TcpServer::status TcpServer::start()
     return _status;
 }
 
-void TcpServer::handlingLoop() {
+void TcpClient::handlingLoop() {
     while(_status == status::up) {
         SOCKET client_socket; 
         SOCKADDR_IN client_addr;
@@ -151,7 +206,7 @@ void TcpServer::handlingLoop() {
         {
             client_handler_threads.push_back(std::thread([this, &client_socket, &client_addr] 
             {
-                clnt = new Client(client_socket, client_addr);
+                clnt = new Server(client_socket, client_addr);
                 handler(clnt);
             }));
         }
@@ -160,13 +215,13 @@ void TcpServer::handlingLoop() {
     }
 }
 
-uint32_t TcpServer::Client::getHost() const {return address.sin_addr.s_addr;}
-uint16_t TcpServer::Client::getPort() const {return address.sin_port;}
-TcpServer::Client::Client(SOCKET socket, SOCKADDR_IN address) : socket(socket), address(address) {}
+uint32_t TcpClient::Server::getHost() const {return address.sin_addr.s_addr;}
+uint16_t TcpClient::Server::getPort() const {return address.sin_port;}
+TcpClient::Server::Server(SOCKET socket, SOCKADDR_IN address) : socket(socket), address(address) {}
 
-TcpServer::Client::Client(const TcpServer::Client& other) : socket(other.socket), address(other.address) {}
+TcpClient::Server::Server(const TcpClient::Server& other) : socket(other.socket), address(other.address) {}
 
-TcpServer::Client::~Client() 
+TcpClient::Server::~Server() 
 {
     shutdown(socket, 0);
     closesocket(socket); 

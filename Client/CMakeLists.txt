@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(TCPIPClient VERSION 0.1.0)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED False)
 
-# include(CTest)
-# enable_testing()
+project(TCPIPClient VERSION 0.2.0)
 
-set(HEADERS TspClient.h)
-set(SOURCES main.cpp TspClient.cpp)
+
+set(HEADERS TcpClient.h)
+set(SOURCES main.cpp TcpClient.cpp)
 add_executable(TCPIPClient ${SOURCES} ${HEADERS})
 
 if (WIN32)
@@ -15,7 +16,5 @@ elseif(UNIX)
     target_link_libraries(TCPIPClient ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
-# set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-# set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-# include(CPack)
+
     
