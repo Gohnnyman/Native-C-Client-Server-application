@@ -1,5 +1,8 @@
+*/build/
 /build
 .idea/
 cmake-build-debug/
-main
+.vscode
+Client/build/
+Server/build/
 

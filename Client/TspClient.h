@@ -1,5 +1,5 @@
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#ifndef TCPCLIENT_H
+#define TCPCLIENT_H
 
 #include <cstdint>
 #include <functional>
@@ -24,11 +24,11 @@
 //Буффер для приёма данных от клиента
 static constexpr uint16_t buffer_size = 4096;
 
-struct TcpServer {
-    class Client;
-     //Тип Callback-функции обработчика клиента
-    typedef std::function<void(Client)> handler_function_t;
-     //Статус сервера
+struct TcpClient {
+
+    class Server;
+    typedef std::function<void(Server*)> handler_function_t;
+
     enum class status : uint8_t {
         up = 0,
         err_socket_init = 1,
@@ -38,13 +38,11 @@ struct TcpServer {
     };
 
 private:
-    uint16_t port; //Порт
+    uint16_t port; 
     status _status = status::close;
     handler_function_t handler;
 
-    std::thread handler_thread;
-    std::list<std::thread> client_handler_threads;
-    std::list<std::thread::id> client_handling_end;
+
 
 #ifdef _WIN32 // Windows NT
     SOCKET serv_socket = INVALID_SOCKET;
@@ -56,31 +54,32 @@ private:
     void handlingLoop();
 
 public:
-    TcpServer(const uint16_t port, handler_function_t handler);
-    ~TcpServer();
+    TcpClient(const uint16_t port);
+    ~TcpClient();
 
-    //! Set client handler
-    void setHandler(handler_function_t handler);
+    // uint16_t getPort() const;
+    // uint16_t setPort(const uint16_t port);
 
-    uint16_t getPort() const;
-    uint16_t setPort(const uint16_t port);
+    // status getStatus() const {return _status;}
 
-    status getStatus() const {return _status;}
+    // status restart();
+    // status start();
 
-    status restart();
-    status start();
-    void stop();
-
-    void joinLoop();
+    // bool sendData(const char* buffer, const size_t size) const;
+    // void stop();
+    // void joinLoop();
 };
 
-class TcpServer::Client {
+
+class TcpClient::Server {
 #ifdef _WIN32 // Windows NT
     SOCKET socket;
     SOCKADDR_IN address;
     char buffer[buffer_size];
 public:
-    Client(SOCKET socket, SOCKADDR_IN address);
+    Server(SOCKET socket, SOCKADDR_IN address);
+    const SOCKET& getSocket() const;
+    const SOCKADDR_IN& getAddr() const;
 #else // *nix
     int socket;
     struct sockaddr_in address;
@@ -89,8 +88,8 @@ public:
     Client(int socket, struct sockaddr_in address);
 #endif
 public:
-    Client(const Client& other);
-    ~Client();
+    Server(const Server& other);
+    ~Server();
     uint32_t getHost() const;
     uint16_t getPort() const;
 
@@ -100,4 +99,5 @@ public:
     bool sendData(const char* buffer, const size_t size) const;
 };
 
-#endif // TCPSERVER_H
+
+#endif // TCPCLIENT_H
