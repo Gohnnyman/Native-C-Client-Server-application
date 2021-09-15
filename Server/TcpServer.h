@@ -1,10 +1,13 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
+#include "Client.h"
 #include <cstdint>
 #include <functional>
 #include <thread>
 #include <list>
+#include <unordered_map>
+#include <string>
 
 #ifdef _WIN32 // Windows NT
 
@@ -29,10 +32,10 @@
 #endif
 
 //Буффер для приёма данных от клиента
-static constexpr uint16_t buffer_size = 4096;
+// static constexpr uint16_t buffer_size = 4096;
 
-struct TcpServer {
-    class Client;
+struct TcpServer 
+{
      //Тип Callback-функции обработчика клиента
     typedef std::function<void(Client*)> handler_function_t;
      //Статус сервера
@@ -51,7 +54,8 @@ private:
     handler_function_t handler;
     Client* clnt = nullptr;
     std::thread handler_thread;
-    std::list<std::thread> client_handler_threads;
+    std::unordered_map<uint32_t, Client*> clients;
+    // std::list<std::thread> client_handler_threads;
 
 #ifdef _WIN32 // Windows NT
     SOCKET serv_socket = INVALID_SOCKET;
@@ -81,33 +85,6 @@ public:
     void joinLoop();
 };
 
-class TcpServer::Client {
-#ifdef _WIN32 // Windows NT
-    SOCKET socket;
-    SOCKADDR_IN address;
-public:
-    Client(SOCKET socket, SOCKADDR_IN address);
-#else // *nix
-    int socket;
-    struct sockaddr_in address;
-    
-public:
-    Client(int socket, struct sockaddr_in address);
-#endif
-public:
-    Client(const Client& other);
-    ~Client();
-    const SOCKET& getSocket() const;
-    const SOCKADDR_IN& getAddr() const;
 
-    uint32_t getHost() const;
-    uint16_t getPort() const;
-    char buffer[buffer_size];
-
-    int loadData();
-    char* getData();
-
-    bool sendData(const char* buffer, const size_t size) const;
-};
 
 #endif // TCPSERVER_H

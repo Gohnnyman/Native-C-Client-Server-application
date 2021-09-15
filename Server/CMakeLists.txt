@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED False)
 project(TCPIPServer VERSION 0.2.0)
 
 
-set(HEADERS TcpServer.h)
-set(SOURCES main.cpp TcpServer.cpp)
+set(HEADERS TcpServer.h Client.h)
+set(SOURCES main.cpp TcpServer.cpp Client.cpp)
 add_executable(TCPIPServer ${SOURCES} ${HEADERS})
 
 if (WIN32)

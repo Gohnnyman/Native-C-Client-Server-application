@@ -54,35 +54,6 @@ void TcpServer::joinLoop()
     handler_thread.join();
 }
 
-
-int TcpServer::Client::loadData() 
-{
-    result = recv(socket, buffer, buffer_size, 0);
-    if (result == SOCKET_ERROR)
-    {
-        std::cout << "recv failed with error\n";
-    }
-    return result;
-}
-
-
-char* TcpServer::Client::getData() 
-{
-    return buffer;
-}
-
-bool TcpServer::Client::sendData(const char* buffer, const size_t size) const
-{
-    result = send(socket, buffer, size, 0); 
-    if (result == SOCKET_ERROR) 
-    {
-        std::cout << "send failed with errorn\n";
-        // WSACleanup();
-        return false;
-    }
-    return true;
-}
-
 bool TcpServer::sendData(char const* buffer, const size_t size) const
 {
     // return clnt->sendData(buffer, size);
@@ -101,20 +72,8 @@ void TcpServer::stop() {
     closesocket(serv_socket);
     
     joinLoop();
-    for(std::thread& cl_thr : client_handler_threads)
-        cl_thr.join(); 
-    client_handler_threads.clear (); 
 }
 
-const SOCKET& TcpServer::Client::getSocket() const 
-{
-    return socket;
-}
-
-const SOCKADDR_IN& TcpServer::Client::getAddr() const
-{
-    return address;
-}
 
 TcpServer::status TcpServer::start() 
 {
@@ -141,33 +100,19 @@ TcpServer::status TcpServer::start()
 }
 
 void TcpServer::handlingLoop() {
+    Client* client;
     while(_status == status::up) {
         SOCKET client_socket; 
         SOCKADDR_IN client_addr;
         unsigned int addrlen = sizeof(client_addr); 
         client_socket = accept(serv_socket, (struct sockaddr*) &client_addr, &addrlen);
-
         if (client_socket != 0 && _status == status::up && clnt == nullptr)
         {
-            client_handler_threads.push_back(std::thread([this, &client_socket, &client_addr] 
-            {
-                clnt = new Client(client_socket, client_addr);
-                handler(clnt);
-            }));
+                client = new Client(client_socket, client_addr);
+                clients.insert({client->getHost(), client});
+                handler(client);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-}
-
-uint32_t TcpServer::Client::getHost() const {return address.sin_addr.s_addr;}
-uint16_t TcpServer::Client::getPort() const {return address.sin_port;}
-TcpServer::Client::Client(SOCKET socket, SOCKADDR_IN address) : socket(socket), address(address) {}
-
-TcpServer::Client::Client(const TcpServer::Client& other) : socket(other.socket), address(other.address) {}
-
-TcpServer::Client::~Client() 
-{
-    shutdown(socket, 0);
-    closesocket(socket); 
 }

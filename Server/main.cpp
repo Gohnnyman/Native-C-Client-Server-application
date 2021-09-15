@@ -4,7 +4,7 @@
 #include <string>
 
 //Парсер ip в std::string
-std::string getHostStr(const TcpServer::Client& client) {
+std::string getHostStr(const Client& client) {
   uint32_t ip = client.getHost();
   return std::string() + std::to_string(int(reinterpret_cast<char*>(&ip)[0])) + '.' +
          std::to_string(int(reinterpret_cast<char*>(&ip)[1])) + '.' +
@@ -16,7 +16,7 @@ std::string getHostStr(const TcpServer::Client& client) {
 int main() {
     //Создание объекта TcpServer с передачей аргументами порта и лябда-фунции для обработк клиента
     TcpServer server(8080,
-        [](TcpServer::Client* client){
+        [](Client* client){
 
             //Вывод адреса подключившего клиента в консоль
             std::cout << "Connected host:" << getHostStr(*client) <<std::endl;
@@ -28,18 +28,19 @@ int main() {
             {
                 int size = 0;
                 char* ch;
-                while (!(size = client->loadData ()));
+                size = client->loadData ();
+                if(!size)
+                {
+                    std::cout << "client " << getHostStr(*client) << " leaved\n";
+                    delete client;
+                    break;
+                } 
+                else if(size < 0) continue;
 
                 ch = client->getData();
                 std::cout
                     << "size: " << size << " bytes" << std::endl
                     << ch << std::endl;
-                
-                if(ch == "quit") 
-                {
-                    // delete client;
-                    break;
-                }
             }
         }
 
