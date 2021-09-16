@@ -109,7 +109,7 @@ void TcpServer::handlingLoop() {
         if (client_socket != 0 && _status == status::up && clnt == nullptr)
         {
                 client = new Client(client_socket, client_addr);
-                clients.insert({client->getHost(), client});
+                // clients.insert({client->getHost(), client});
                 handler(client);
         }
 

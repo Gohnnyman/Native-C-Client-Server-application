@@ -32,6 +32,25 @@
 static constexpr uint16_t buffer_size = 4096;
 
 class Client {
+
+    uint16_t static const map_size = 11; 
+    char map[map_size][map_size] = {
+        {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'},
+        {'0', '&', '&', ' ', '&', ' ', ' ', '&', '&', '&', '&'},
+        {'1', ' ', ' ', ' ', '&', ' ', ' ', ' ', ' ', ' ', ' '},
+        {'2', '&', ' ', ' ', '&', ' ', '&', '&', '&', ' ', '&'},
+        {'3', '&', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '&'},
+        {'4', '&', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        {'5', '&', ' ', ' ', ' ', ' ', '&', ' ', ' ', ' ', '&'},
+        {'6', ' ', ' ', ' ', ' ', ' ', '&', ' ', ' ', ' ', '&'},
+        {'7', '&', '&', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '&'},
+        {'8', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        {'9', ' ', ' ', ' ', ' ', '&', '&', '&', '&', '&', '&'}
+    };
+    char* buffer = new char[buffer_size];
+
+    void execCommand(const char* ch, const int size);
+
 #ifdef _WIN32 // Windows NT
     SOCKET socket;
     SOCKADDR_IN address;
@@ -44,6 +63,8 @@ public:
 public:
     Client(int socket, struct sockaddr_in address);
 #endif
+
+
 public:
     Client(const Client& other);
     ~Client();
@@ -52,12 +73,13 @@ public:
 
     uint32_t getHost() const;
     uint16_t getPort() const;
-    char buffer[buffer_size];
 
+    int getCommand();
     int loadData();
     char* getData();
 
     bool sendData(const char* buffer, const size_t size) const;
+    bool sendMap();
 };
 
 #endif // CLIENT_H

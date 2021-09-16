@@ -22,13 +22,16 @@ int main() {
             std::cout << "Connected host:" << getHostStr(*client) <<std::endl;
 
             const char answer[] = "Hello World from Server";
-            client->sendData(answer, sizeof (answer));
+            ssize_t result; 
 
+            client->sendData(answer, sizeof (answer));
+            int size = 0;
+            char* ch;
             while(true)
             {
-                int size = 0;
-                char* ch;
-                size = client->loadData ();
+                size = 0;
+                result = client->sendMap();
+                size = client->getCommand();
                 if(!size)
                 {
                     std::cout << "client " << getHostStr(*client) << " leaved\n";
@@ -38,12 +41,11 @@ int main() {
                 else if(size < 0) continue;
 
                 ch = client->getData();
-                std::cout
-                    << "size: " << size << " bytes" << std::endl
-                    << ch << std::endl;
+                // std::cout
+                //     << "size: " << size << " bytes" << std::endl
+                //     << ch << std::endl;
             }
         }
-
     );
 
     //Запуск серевера

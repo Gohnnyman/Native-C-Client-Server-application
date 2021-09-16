@@ -54,7 +54,7 @@ private:
     handler_function_t handler;
     Client* clnt = nullptr;
     std::thread handler_thread;
-    std::unordered_map<uint32_t, Client*> clients;
+    // std::unordered_map<uint32_t, Client*> clients;
     // std::list<std::thread> client_handler_threads;
 
 #ifdef _WIN32 // Windows NT
