@@ -24,6 +24,7 @@ char* Client::getData()
 
 bool Client::sendData(const char* buffer, const size_t size) const
 {
+    // log(buffer);
     ssize_t result = send(socket, buffer, size, 0); 
     if (result == SOCKET_ERROR) 
     {
@@ -34,12 +35,12 @@ bool Client::sendData(const char* buffer, const size_t size) const
     return true;
 }
 
-bool Client::sendMap()
+bool Client::sendMap() const
 {
     size_t size = (map_size * map_size * 2 + map_size + 1);
-    strcpy(buffer, "\n");
-    // size = 0;
+    strcpy(buffer, "");
 
+    // strcat(buffer, "\x1B[2J\x1B[H");
     for(int i = 0; i < map_size; ++i)
     {
         for(int j = 0; j < map_size; ++j)
@@ -48,14 +49,23 @@ bool Client::sendMap()
                 strncat(buffer, " ", 1);
             else 
                 strncat(buffer, &map[i][j], 1);
-            // size++;
-            strncat(buffer, "|", 1); // map_size x 2
-            // size++;
+            strncat(buffer, "|", 1); 
         }
         strncat(buffer, "\n", 1);
-        // size++;
     }
     return sendData(buffer, size);
+}
+
+int Client::getHits() const
+{
+    return hits;
+}
+
+bool Client::sendStats() const
+{
+    strcpy(buffer, "");
+    sprintf(buffer, "You win!\nShots: %d\nHits: %d\nMisses: %d\n", shots, hits, shots - hits);
+    return sendData(buffer, strlen(buffer));
 }
 
 int Client::getCommand()
@@ -67,7 +77,6 @@ int Client::getCommand()
         return size; 
 
     ch = getData();
-    std::cout << "COMMAND: " << ch << ' ' << size << '\n';
     execCommand(ch, size);
     return size;
 }
@@ -106,6 +115,7 @@ void Client::execCommand(const char* ch, const int size)
 
         if(map[i + 1][j + 1] == '&')
         {
+            hits++;
             map[i + 1][j + 1] = '*'; 
             sendData(hit, sizeof(hit));
         }
@@ -114,6 +124,7 @@ void Client::execCommand(const char* ch, const int size)
             map[i + 1][j + 1] = 'X';
             sendData(miss, sizeof(miss));
         }    
+        shots++;
     }
     catch(const std::exception& e)
     {

@@ -8,6 +8,8 @@
 #include <list>
 #include <unordered_map>
 #include <string>
+#include <fstream>
+
 
 #ifdef _WIN32 // Windows NT
 
@@ -47,15 +49,21 @@ struct TcpServer
         close = 4
     };
 
+
 private:
+    time_t rawtime;
+    struct tm* timeinfo;
+    char* buffer = new char[buffer_size];
+
+    std::ofstream logfile;
+    const char* logfilename = "log.txt";
+
     static int result;
     uint16_t port; 
     status _status = status::close;
     handler_function_t handler;
-    Client* clnt = nullptr;
     std::thread handler_thread;
-    // std::unordered_map<uint32_t, Client*> clients;
-    // std::list<std::thread> client_handler_threads;
+
 
 #ifdef _WIN32 // Windows NT
     SOCKET serv_socket = INVALID_SOCKET;
@@ -80,9 +88,11 @@ public:
     status restart();
     status start();
 
-    bool sendData(const char* buffer, const size_t size) const;
+    void log(const char* buffer);
+
     void stop();
     void joinLoop();
+    char* getlocaltime(const struct tm *timeptr) const;
 };
 
 

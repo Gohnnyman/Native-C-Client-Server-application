@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
 //Парсер ip в std::string
 std::string getHostStr(const Client& client) {
@@ -14,37 +15,36 @@ std::string getHostStr(const Client& client) {
 }
 
 int main() {
-    //Создание объекта TcpServer с передачей аргументами порта и лябда-фунции для обработк клиента
-    TcpServer server(8080,
+    TcpServer server(1041,
         [](Client* client){
+            std::string str;
+            std::cout << &str << '\n';
+            str = "Connected host: " + getHostStr(*client) + "\n";
 
-            //Вывод адреса подключившего клиента в консоль
-            std::cout << "Connected host:" << getHostStr(*client) <<std::endl;
+            std::cout << str;
+            // server->log(str.c_str());
 
-            const char answer[] = "Hello World from Server";
+            const char answer[] = "How to play:\n1a, a1, 1A or A1 for hiting row 1 and column a.\nquit or q for quit.\nPress any button to continue\n";
             ssize_t result; 
 
-            client->sendData(answer, sizeof (answer));
+
             int size = 0;
+            client->sendData(answer, sizeof (answer));
+            size = client->loadData();
             char* ch;
-            while(true)
+            while(client->getHits() < 31 && size != 0)
             {
-                size = 0;
-                result = client->sendMap();
+                client->sendMap();
                 size = client->getCommand();
                 if(!size)
                 {
                     std::cout << "client " << getHostStr(*client) << " leaved\n";
-                    delete client;
                     break;
                 } 
                 else if(size < 0) continue;
-
-                ch = client->getData();
-                // std::cout
-                //     << "size: " << size << " bytes" << std::endl
-                //     << ch << std::endl;
             }
+            if(size) client->sendStats();
+            delete client;
         }
     );
 
@@ -56,13 +56,13 @@ int main() {
         return -1;
     }
 
-
-    std::string server_msg;
-
-    while(server.getStatus() == TcpServer::status::up)
+    std::string input;
+    while (true)
     {
-        std::cin >> server_msg;
-        server.sendData(server_msg.c_str(), server_msg.size());
+        std::cin >> input;
+        if(input == "quit")
+        {
+            break;    
+        }
     }
-
 }

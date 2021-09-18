@@ -48,6 +48,8 @@ class Client {
         {'9', ' ', ' ', ' ', ' ', '&', '&', '&', '&', '&', '&'}
     };
     char* buffer = new char[buffer_size];
+    int shots = 0;
+    int hits = 0;
 
     void execCommand(const char* ch, const int size);
 
@@ -77,9 +79,11 @@ public:
     int getCommand();
     int loadData();
     char* getData();
+    int getHits() const;
 
     bool sendData(const char* buffer, const size_t size) const;
-    bool sendMap();
+    bool sendMap() const;
+    bool sendStats() const;
 };
 
 #endif // CLIENT_H
