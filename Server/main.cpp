@@ -57,9 +57,8 @@ int main() {
     }
 
     std::string input;
-    while (true)
+    while (std::cin >> input)
     {
-        std::cin >> input;
         if(input == "quit")
         {
             break;    

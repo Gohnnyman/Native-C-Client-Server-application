@@ -55,8 +55,7 @@ private:
     struct tm* timeinfo;
     char* buffer = new char[buffer_size];
 
-    std::ofstream logfile;
-    const char* logfilename = "log.txt";
+
 
     static int result;
     uint16_t port; 
