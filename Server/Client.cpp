@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "Logger.h"
 #include <chrono>
 #include <iostream>
 #include <cstring>
@@ -24,14 +25,16 @@ char* Client::getData()
 
 bool Client::sendData(const char* buffer, const size_t size) const
 {
-    // log(buffer);
+    Logger::log(buffer, "From server:\n");
+
     ssize_t result = send(socket, buffer, size, 0); 
     if (result == SOCKET_ERROR) 
     {
-        std::cout << "send failed with errorn\n";
+        std::cout << "send failed with error\n";
         // WSACleanup();
         return false;
     }
+
     return true;
 }
 
@@ -119,11 +122,15 @@ void Client::execCommand(const char* ch, const int size)
             map[i + 1][j + 1] = '*'; 
             sendData(hit, sizeof(hit));
         }
-        else 
+        else if(map[i + 1][j + 1] == ' ')
         {
             map[i + 1][j + 1] = 'X';
             sendData(miss, sizeof(miss));
-        }    
+        } 
+        else 
+        {
+            sendData(miss, sizeof(miss));
+        }
         shots++;
     }
     catch(const std::exception& e)

@@ -1,4 +1,5 @@
 #include "TcpServer.h"
+#include "Logger.h"
 
 #include <iostream>
 #include <string>
@@ -15,10 +16,10 @@ std::string getHostStr(const Client& client) {
 }
 
 int main() {
+    Logger::clear();
     TcpServer server(1041,
         [](Client* client){
             std::string str;
-            std::cout << &str << '\n';
             str = "Connected host: " + getHostStr(*client) + "\n";
 
             std::cout << str;

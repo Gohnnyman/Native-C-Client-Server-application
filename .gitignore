@@ -1,8 +1,4 @@
-*/build/
-/build
-.idea/
-cmake-build-debug/
-.vscode
-Client/build/
-Server/build/
-
+**/build
+**/.idea
+**/cmake-build-debug/
+**/.vscode

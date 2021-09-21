@@ -51,8 +51,6 @@ struct TcpServer
 
 
 private:
-    time_t rawtime;
-    struct tm* timeinfo;
     char* buffer = new char[buffer_size];
 
 
@@ -87,11 +85,9 @@ public:
     status restart();
     status start();
 
-    void log(const char* buffer);
 
     void stop();
     void joinLoop();
-    char* getlocaltime(const struct tm *timeptr) const;
 };
 
 
