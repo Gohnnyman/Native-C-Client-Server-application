@@ -74,6 +74,14 @@ public:
     const SOCKET& getSocket() const;
     const SOCKADDR_IN& getAddr() const;
 
+    void getHostStr(char* buffer) const {
+        uint32_t ip = getHost();
+        sprintf(buffer, "%d.%d.%d.%d:%d", int(reinterpret_cast<char*>(&ip)[0]),
+            int(reinterpret_cast<char*>(&ip)[1]),
+            int(reinterpret_cast<char*>(&ip)[2]),
+            int(reinterpret_cast<char*>(&ip)[3]),
+            getPort());
+    }
     uint32_t getHost() const;
     uint16_t getPort() const;
 

@@ -7,8 +7,15 @@
 
 int Client::loadData() 
 {
-    strcpy(buffer, "");
     ssize_t result = recv(socket, buffer, buffer_size, 0);
+
+    buffer[result] = '\0';
+    char prefix[64];
+    char tmp[25];
+    getHostStr(tmp);
+    sprintf(prefix, "\nUser %s to server:\n", tmp);
+    Logger::log(buffer, prefix);
+
     if (result == SOCKET_ERROR)
     {
         std::cout << "recv failed with error\n";
@@ -25,10 +32,15 @@ char* Client::getData()
 
 bool Client::sendData(const char* buffer, const size_t size) const
 {
-    Logger::log(buffer, "From server:\n");
+    char prefix[64];
+    char tmp[25];
+    getHostStr(tmp);
+    sprintf(prefix, "\nServer to %s:\n", tmp);
+    Logger::log(buffer, prefix);
+
 
     ssize_t result = send(socket, buffer, size, 0); 
-    if (result == SOCKET_ERROR) 
+    if (result == SOCKET_ERROR)
     {
         std::cout << "send failed with error\n";
         // WSACleanup();
@@ -135,7 +147,6 @@ void Client::execCommand(const char* ch, const int size)
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
         sendData(error_string, sizeof(error_string));
     }
 }
