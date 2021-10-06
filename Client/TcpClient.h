@@ -82,7 +82,7 @@ public:
     
     int loadData();
     char* getData();
-    bool sendData(const char* buffer, const size_t size) const;
+    bool sendData(const char* buffer, const size_t size);
     void stop();
     void joinLoop();
 };

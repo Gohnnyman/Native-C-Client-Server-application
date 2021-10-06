@@ -17,7 +17,7 @@ int main() {
             std::cout << tmp;
             Logger::log(tmp);
 
-            const char answer[] = "How to play:\n1a, a1, 1A or A1 for hiting row 1 and column a.\nquit or q for quit.\n";
+            const char answer[] = "How to play:\n1a, a1, 1A or A1 for hiting row 1 and column a.\n ctrl+c for quit, show for showing a map.\n";
             ssize_t result; 
 
 

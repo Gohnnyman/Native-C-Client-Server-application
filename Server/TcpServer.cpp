@@ -14,9 +14,6 @@ TcpServer::TcpServer(const uint16_t port, handler_function_t handler) : port(por
 TcpServer::~TcpServer() 
 {
     stop();
-    #ifdef _WIN32 // Windows NT
-        WSACleanup();
-    #endif
 }
 
 
@@ -45,9 +42,6 @@ TcpServer::status TcpServer::restart()
     if(_status == status::up) 
     {
         stop();
-        #ifdef _WIN32 // Windows NT
-            WSACleanup();
-        #endif
     }
     return start();
 }
@@ -63,6 +57,9 @@ void TcpServer::stop()
     _status = status::close; 
     joinLoop();
     closesocket(serv_socket);
+    #ifdef _WIN32 // Windows NT
+        WSACleanup();
+    #endif
 }
 
 
@@ -101,9 +98,6 @@ void TcpServer::handlingLoop() {
         if (client_socket != 0 && _status == status::up)
         {
             client = new Client(client_socket, client_addr);
-            uint32_t ip = client->getHost();
-                        std::cout << "POPA:\n" << ip << '\n';
-            std::cout << "POPAAAAA\n" << uint32_t(reinterpret_cast<char*>(&ip)[0]) << '\n';
             std::thread t([this, client]{handler(client);});
             t.detach();
         } 

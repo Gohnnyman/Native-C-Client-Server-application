@@ -16,9 +16,6 @@ TcpClient::~TcpClient()
 {
     delete[] this->server_ip;
     stop();
-    #ifdef _WIN32 // Windows NT
-        WSACleanup();
-    #endif
 }
 
 TcpClient::status TcpClient::restart() 
@@ -26,23 +23,29 @@ TcpClient::status TcpClient::restart()
     if(_status == status::up) 
     {
         stop();
-        #ifdef _WIN32 // Windows NT
-            WSACleanup();
-        #endif
+
     }
     return start();
 }
 
 void TcpClient::joinLoop() 
 {
-    handler_thread.join();
+    handler_thread.~thread();
+    // handler_thread.join();
 }
 
 void TcpClient::stop() 
 {
     _status = status::close; 
+
     joinLoop();
+    
     closesocket(server_socket);
+    #ifdef _WIN32 
+        WSACleanup();
+    #endif
+
+    std::cout << "Client stopped\n";
 }
 
 
@@ -70,14 +73,14 @@ TcpClient::status TcpClient::start()
 void TcpClient::getHostStr(char* buffer) const 
 {
     uint32_t ip = getServerHost();
-    sprintf(buffer, "%d.%d.%d.%d:%d", int(reinterpret_cast<char*>(&ip)[0]),
-        int(reinterpret_cast<char*>(&ip)[1]),
-        int(reinterpret_cast<char*>(&ip)[2]),
-        int(reinterpret_cast<char*>(&ip)[3]),
+    sprintf(buffer, "%d.%d.%d.%d:%d", reinterpret_cast<uint8_t*>(&ip)[0],
+            reinterpret_cast<uint8_t*>(&ip)[1],
+            reinterpret_cast<uint8_t*>(&ip)[2],
+            reinterpret_cast<uint8_t*>(&ip)[3],
         htons(getServerPort()));
 }
 
-bool TcpClient::sendData(const char* buffer, const size_t size) const
+bool TcpClient::sendData(const char* buffer, const size_t size)
 {
     char prefix[64];
     char tmp[25];
@@ -90,7 +93,7 @@ bool TcpClient::sendData(const char* buffer, const size_t size) const
     if (result == SOCKET_ERROR)
     {
         std::cout << "send failed with error\n";
-        // WSACleanup();
+        stop();
         return false;
     }
 
@@ -99,10 +102,12 @@ bool TcpClient::sendData(const char* buffer, const size_t size) const
 
 void TcpClient::sendingLoop() 
 {
-    while(_status == status::up)
+    while(std::cin >> buffer && _status == status::up)
     {
-        std::cin >> buffer;
-        sendData(buffer, buffer_size);
+        if(strcmp(buffer, "quit") == 0 || strcmp(buffer, "q") == 0) 
+            stop();
+        else 
+            sendData(buffer, buffer_size);
     }
 }
 
@@ -120,6 +125,7 @@ int TcpClient::loadData()
     if (result == SOCKET_ERROR)
     {
         std::cout << "recv failed with error\n";
+        stop();
     }
 
     return result;

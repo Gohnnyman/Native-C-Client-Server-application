@@ -44,7 +44,6 @@ bool Client::sendData(const char* buffer, const size_t size) const
     if (result == SOCKET_ERROR)
     {
         std::cout << "send failed with error\n";
-        // WSACleanup();
         return false;
     }
     return true;
@@ -68,7 +67,6 @@ bool Client::sendMap() const
         }
         strncat(buffer, "\n", 1);
     }
-    std::cout << "MAP:\n" << buffer << '\n'; 
     return sendData(buffer, size);
 }
 
@@ -93,7 +91,6 @@ int Client::getCommand()
         return size; 
 
     ch = getData();
-    std::cout << ch << '\n';
     if(strcmp(ch, "Who\n") == 0 || strcmp(ch, "Who") == 0)
         whoCommand(); 
     else if(strcmp(ch, "show\n") == 0 || strcmp(ch, "show") == 0)
