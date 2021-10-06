@@ -1,10 +1,14 @@
-#ifndef TCPCLIENT_H
-#define TCPCLIENT_H
+#ifndef TCPSERVER_H
+#define TCPSERVER_H
 
 #include <cstdint>
 #include <functional>
 #include <thread>
 #include <list>
+#include <unordered_map>
+#include <string>
+#include <fstream>
+
 
 #ifdef _WIN32 // Windows NT
 
@@ -31,83 +35,58 @@
 //Буффер для приёма данных от клиента
 static constexpr uint16_t buffer_size = 4096;
 
-struct TcpClient {
-    class Server;
-     //Тип Callback-функции обработчика клиента
-    typedef std::function<void(Server*)> handler_function_t;
+struct TcpClient 
+{
      //Статус сервера
     enum class status : uint8_t {
         up = 0,
         err_socket_init = 1,
-        err_socket_bind = 2,
+        err_socket_connect = 2,
         err_socket_listening = 3,
         close = 4
     };
 
 private:
+    char* buffer = new char[buffer_size];
+
     static int result;
-    uint16_t port; 
+    uint16_t server_port; 
+    char* server_ip;
     status _status = status::close;
-    handler_function_t handler;
-    Server* clnt = nullptr;
     std::thread handler_thread;
-    std::list<std::thread> client_handler_threads;
+    std::thread sender_thread;
+
+    SOCKADDR_IN server_address;
+    SOCKET server_socket = INVALID_SOCKET;
 
 #ifdef _WIN32 // Windows NT
-    SOCKET serv_socket = INVALID_SOCKET;
     WSAData w_data;
-#else // *nix
-    int serv_socket;
 #endif
 
     void handlingLoop();
+    void sendingLoop();
 
 public:
-    TcpClient(const uint16_t port, handler_function_t handler);
+    TcpClient(const char* server_ip, const uint16_t server_port);
     ~TcpClient();
 
-    void setHandler(handler_function_t handler);
+    void getHostStr(char* buffer) const;
 
-    uint16_t getPort() const;
-    uint16_t setPort(const uint16_t port);
+    uint32_t getServerHost() const;
+    uint16_t getServerPort() const;
 
     status getStatus() const {return _status;}
 
     status restart();
     status start();
-
+    
+    int loadData();
+    char* getData();
     bool sendData(const char* buffer, const size_t size) const;
     void stop();
     void joinLoop();
 };
 
-class TcpClient::Server {
-#ifdef _WIN32 // Windows NT
-    SOCKET socket;
-    SOCKADDR_IN address;
-public:
-    Server(SOCKET socket, SOCKADDR_IN address);
-#else // *nix
-    int socket;
-    struct sockaddr_in address;
-    
-public:
-    Server(int socket, struct sockaddr_in address);
-#endif
-public:
-    Server(const Server& other);
-    ~Server();
-    const SOCKET& getSocket() const;
-    const SOCKADDR_IN& getAddr() const;
 
-    uint32_t getHost() const;
-    uint16_t getPort() const;
-    char buffer[buffer_size];
 
-    int loadData();
-    char* getData();
-
-    bool sendData(const char* buffer, const size_t size) const;
-};
-
-#endif // TCPCLIENT_H
+#endif // TCPSERVER_H

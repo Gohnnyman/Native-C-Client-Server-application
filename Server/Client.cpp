@@ -37,6 +37,7 @@ bool Client::sendData(const char* buffer, const size_t size) const
     getHostStr(tmp);
     sprintf(prefix, "\nServer to %s:\n", tmp);
     Logger::log(buffer, prefix);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
 
     ssize_t result = send(socket, buffer, size, 0); 
@@ -46,7 +47,6 @@ bool Client::sendData(const char* buffer, const size_t size) const
         // WSACleanup();
         return false;
     }
-
     return true;
 }
 
@@ -68,6 +68,7 @@ bool Client::sendMap() const
         }
         strncat(buffer, "\n", 1);
     }
+    std::cout << "MAP:\n" << buffer << '\n'; 
     return sendData(buffer, size);
 }
 
@@ -92,8 +93,19 @@ int Client::getCommand()
         return size; 
 
     ch = getData();
-    execCommand(ch, size);
+    std::cout << ch << '\n';
+    if(strcmp(ch, "Who\n") == 0 || strcmp(ch, "Who") == 0)
+        whoCommand(); 
+    else if(strcmp(ch, "show\n") == 0 || strcmp(ch, "show") == 0)
+        sendMap();
+    else 
+        execCommand(ch, size);
     return size;
+}
+
+void Client::whoCommand()
+{
+    sendData("Alexander Fedorovskyi 16 Sea Battle\n", 36);
 }
 
 void Client::execCommand(const char* ch, const int size)

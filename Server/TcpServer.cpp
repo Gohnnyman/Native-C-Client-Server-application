@@ -101,6 +101,9 @@ void TcpServer::handlingLoop() {
         if (client_socket != 0 && _status == status::up)
         {
             client = new Client(client_socket, client_addr);
+            uint32_t ip = client->getHost();
+                        std::cout << "POPA:\n" << ip << '\n';
+            std::cout << "POPAAAAA\n" << uint32_t(reinterpret_cast<char*>(&ip)[0]) << '\n';
             std::thread t([this, client]{handler(client);});
             t.detach();
         } 

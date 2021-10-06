@@ -28,6 +28,7 @@
 #define SOCKADDR_IN struct sockaddr_in
 
 #endif
+#include <iostream>
 
 
 static constexpr uint16_t buffer_size = 4096;
@@ -53,6 +54,7 @@ class Client {
     int hits = 0;
 
     void execCommand(const char* ch, const int size);
+    void whoCommand();
 
 #ifdef _WIN32 // Windows NT
     SOCKET socket;
@@ -67,7 +69,6 @@ public:
     Client(int socket, struct sockaddr_in address);
 #endif
 
-
 public:
     Client(const Client& other);
     ~Client();
@@ -76,11 +77,11 @@ public:
 
     void getHostStr(char* buffer) const {
         uint32_t ip = getHost();
-        sprintf(buffer, "%d.%d.%d.%d:%d", int(reinterpret_cast<char*>(&ip)[0]),
-            int(reinterpret_cast<char*>(&ip)[1]),
-            int(reinterpret_cast<char*>(&ip)[2]),
-            int(reinterpret_cast<char*>(&ip)[3]),
-            getPort());
+        sprintf(buffer, "%d.%d.%d.%d:%d", reinterpret_cast<uint8_t*>(&ip)[0],
+            reinterpret_cast<uint8_t*>(&ip)[1],
+            reinterpret_cast<uint8_t*>(&ip)[2],
+            reinterpret_cast<uint8_t*>(&ip)[3],
+            htons(getPort()));
     }
     uint32_t getHost() const;
     uint16_t getPort() const;

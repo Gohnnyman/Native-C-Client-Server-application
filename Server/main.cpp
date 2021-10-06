@@ -17,17 +17,17 @@ int main() {
             std::cout << tmp;
             Logger::log(tmp);
 
-            const char answer[] = "How to play:\n1a, a1, 1A or A1 for hiting row 1 and column a.\nquit or q for quit.\nPress any button to continue\n";
+            const char answer[] = "How to play:\n1a, a1, 1A or A1 for hiting row 1 and column a.\nquit or q for quit.\n";
             ssize_t result; 
 
 
             int size = 0;
             client->sendData(answer, sizeof(answer));
-            size = client->loadData();
+            client->sendMap();
+
             char* ch;
-            while(client->getHits() < 31 && size)
+            while(client->getHits() < 31)
             {
-                client->sendMap();
                 size = client->getCommand();
                 if(!size)
                 {
