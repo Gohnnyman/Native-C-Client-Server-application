@@ -82,7 +82,8 @@ public:
             reinterpret_cast<uint8_t*>(&ip)[2],
             reinterpret_cast<uint8_t*>(&ip)[3],
             htons(getPort()));
-    }
+    }; 
+    
     uint32_t getHost() const;
     uint16_t getPort() const;
 

@@ -75,6 +75,15 @@ TcpServer::status TcpServer::start()
     address.sin_family = AF_INET; //AF_INET - Cемейство адресов для IPv4
     serv_socket = socket(AF_INET, SOCK_STREAM, 0);
 
+    uint32_t ip = address.sin_addr.s_addr;
+        sprintf(buffer, "%d.%d.%d.%d:%d", reinterpret_cast<uint8_t*>(&ip)[0],
+            reinterpret_cast<uint8_t*>(&ip)[1],
+            reinterpret_cast<uint8_t*>(&ip)[2],
+            reinterpret_cast<uint8_t*>(&ip)[3],
+            htons(getPort()));
+
+    std::cout << "IP: " << buffer << '\n';
+
     if(static_cast<int>(serv_socket) == SOCKET_ERROR) return _status = status::err_socket_init;
 
     if(bind(serv_socket, (struct sockaddr*)&address, sizeof(address)) == SOCKET_ERROR) return _status = status::err_socket_bind;

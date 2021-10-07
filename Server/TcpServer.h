@@ -85,7 +85,6 @@ public:
     status restart();
     status start();
 
-
     void stop();
     void joinLoop();
 };
