@@ -82,8 +82,6 @@ TcpServer::status TcpServer::start()
             reinterpret_cast<uint8_t*>(&ip)[3],
             htons(getPort()));
 
-    std::cout << "IP: " << buffer << '\n';
-
     if(static_cast<int>(serv_socket) == SOCKET_ERROR) return _status = status::err_socket_init;
 
     if(bind(serv_socket, (struct sockaddr*)&address, sizeof(address)) == SOCKET_ERROR) return _status = status::err_socket_bind;
